@@ -11,6 +11,9 @@ from pygame.locals import (
     QUIT
 )
 
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -23,17 +26,29 @@ class Player(pygame.sprite.Sprite):
 
     def move(self, keys):
         if keys[K_UP]:
-            self.rect.move_ip(0, -self.h)
-        elif keys[K_LEFT]:
-            self.rect.move_ip(-self.w, 0)
+            self.rect.move_ip(0, -1)
+        if keys[K_LEFT]:
+            self.rect.move_ip(-1, 0)
+        if keys[K_RIGHT]:
+            self.rect.move_ip(1, 0)
+        if keys[K_DOWN]:
+            self.rect.move_ip(0, 1)
+
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
+        if self.rect.top <= 0:
+            self.rect.top = 0
+        if self.rect.bottom >= SCREEN_HEIGHT:
+            self.rect.bottom = SCREEN_HEIGHT
 
 
 pygame.init()
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-running = True
 player = Player()
+running = True
 
 while running:
     for event in pygame.event.get():
@@ -45,6 +60,8 @@ while running:
 
     screen.fill((0, 0, 0))
     screen.blit(player.surf, player.rect)
+    pressed_keys = pygame.key.get_pressed()
+    player.move(pressed_keys)
 
     pygame.display.flip()
 
