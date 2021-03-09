@@ -12,14 +12,14 @@ from pygame.locals import (
     QUIT
 )
 
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 1024
+SCREEN_WIDTH = 1440
+SCREEN_HEIGHT = 900
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player, self).__init__()
-        self.surf = pygame.image.load("images/panda.png").convert()
+        self.surf = pygame.image.load("images/finn.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect()
 
@@ -46,7 +46,7 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self):
         super(Enemy, self).__init__()
-        self.surf = pygame.image.load("images/bear.png").convert()
+        self.surf = pygame.image.load("images/bear.png").convert_alpha()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect(
             center=(
@@ -54,7 +54,7 @@ class Enemy(pygame.sprite.Sprite):
                 random.randint(0, SCREEN_HEIGHT),
             )
         )
-        self.speed = 1
+        self.speed = 5
 
     def update(self):
         self.rect.move_ip(-self.speed, 0)
@@ -65,8 +65,8 @@ class Enemy(pygame.sprite.Sprite):
 class Cloud(pygame.sprite.Sprite):
     def __init__(self):
         super(Cloud, self).__init__()
-        self.surf = pygame.image.load("images/cloud.png").convert()
-        self.surf.set_colorkey((0, 0, 0), RLEACCEL)
+        self.surf = pygame.image.load("images/cloud.png").convert_alpha()
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
 
         self.rect = self.surf.get_rect(
             center=(
@@ -74,12 +74,23 @@ class Cloud(pygame.sprite.Sprite):
                 random.randint(0, SCREEN_HEIGHT),
             )
         )
-        self.speed = 1
 
     def update(self):
-        self.rect.move_ip(-self.speed, 0)
+        self.rect.move_ip(-5, 0)
         if self.rect.right < 0:
             self.kill()
+
+
+class Background(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Background, self).__init__()
+        self.surf = pygame.image.load("images/backgroundimage.png").convert()
+        self.surf.set_colorkey((0, 0, 0), RLEACCEL)
+
+        self.rect = self.surf.get_rect()
+
+    def update(self):
+        self.rect.move_ip(-5, 0)
 
 
 pygame.init()
@@ -87,17 +98,23 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 ADD_ENEMY = pygame.USEREVENT + 1
-pygame.time.set_timer(ADD_ENEMY, 500)
+pygame.time.set_timer(ADD_ENEMY, 1500)
 
 ADD_CLOUD = pygame.USEREVENT + 2
 pygame.time.set_timer(ADD_CLOUD, 1000)
 
+ADD_SKY = pygame.USEREVENT + 3
+pygame.time.set_timer(ADD_SKY, 0)
+
 player = Player()
 
+skys = pygame.sprite.Group()
 clouds = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
+
+clock = pygame.time.Clock()
 
 running = True
 
@@ -119,6 +136,11 @@ while running:
             clouds.add(new_cloud)
             all_sprites.add(new_cloud)
 
+        elif event.type == ADD_SKY:
+            new_sky = Background()
+            skys.add(new_sky)
+            all_sprites.add(new_sky)
+
     screen.fill((0, 0, 0))
 
     if pygame.sprite.spritecollideany(player, enemies):
@@ -130,8 +152,13 @@ while running:
 
     pressed_keys = pygame.key.get_pressed()
     player.update(pressed_keys)
+
+    skys.update()
     enemies.update()
+    clouds.update()
 
     pygame.display.flip()
+
+    clock.tick(90)
 
 pygame.quit()
